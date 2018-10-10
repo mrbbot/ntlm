@@ -9,7 +9,7 @@ import 'package:fixnum/fixnum.dart';
 
 class DESEngine extends BaseBlockCipher {
   static final FactoryConfig FACTORY_CONFIG =
-      new StaticFactoryConfig(BlockCipher, "DES");
+      new StaticFactoryConfig(BlockCipher, "DES", () => new DESEngine());
 
   static const _BLOCK_SIZE = 8;
 
