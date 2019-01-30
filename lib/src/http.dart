@@ -12,6 +12,8 @@ class NTLMClient {
   String lmPassword;
   String ntPassword;
 
+  Client _client;
+
   NTLMClient({
     this.domain = "",
     this.workstation = "",
@@ -26,16 +28,19 @@ class NTLMClient {
         "You must provide a password or the LM and NT hash of a password.",
       );
     }
+    _client = Client();
   }
+
+  Client get client => _client;
+
+  void get close => _client.close;
 
   Future<Response> get(String url, {Map<String, String> headers}) async {
     if (headers == null) {
       headers = new Map<String, String>();
     }
 
-    var client = Client();
-
-    Response res0 = await client.get(url, headers: headers);
+    Response res0 = await _client.get(url, headers: headers);
     if (res0.statusCode == 200 ||
         !res0.headers[HttpHeaders.wwwAuthenticateHeader].contains("NTLM"))
       return res0;
@@ -44,7 +49,7 @@ class NTLMClient {
       domain: domain,
       workstation: workstation,
     );
-    Response res2 = await client.get(url,
+    Response res2 = await _client.get(url,
         headers: {
           HttpHeaders.authorizationHeader: msg1,
         }..addAll(headers));
@@ -62,12 +67,10 @@ class NTLMClient {
       lmPassword: lmPassword,
       ntPassword: ntPassword,
     );
-    Response res3 = await client.get(url,
+    Response res3 = await _client.get(url,
         headers: {
           HttpHeaders.authorizationHeader: msg3,
         }..addAll(headers));
-
-    client.close();
 
     return res3;
   }
