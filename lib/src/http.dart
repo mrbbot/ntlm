@@ -37,7 +37,8 @@ class NTLMClient {
 
     Response res0 = await client.get(url, headers: headers);
     if (res0.statusCode == 200 ||
-        res0.headers[HttpHeaders.wwwAuthenticateHeader] != "NTLM") return res0;
+        !res0.headers[HttpHeaders.wwwAuthenticateHeader].contains("NTLM"))
+      return res0;
 
     String msg1 = createType1Message(
       domain: domain,
