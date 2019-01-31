@@ -10,8 +10,8 @@ environment:
 dependencies:
   http: any
   utf: any
-  pointycastle: ^1.0.0-rc4
-  fixnum: ^0.10.8
+  pointycastle: 1.0.0
+  fixnum: any
 
 dev_dependencies:
-  test: ^1.0.0
+  test: any
