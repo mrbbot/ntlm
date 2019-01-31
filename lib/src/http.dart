@@ -34,7 +34,7 @@ class NTLMClient {
         "You must provide a password or the LM and NT hash of a password.",
       );
     }
-
+  
     this._inner = inner ?? Client();
   }
 
@@ -48,12 +48,14 @@ class NTLMClient {
 
     Response res0 = await request(headers);
     if (res0.statusCode == 200 ||
-        res0.headers[HttpHeaders.wwwAuthenticateHeader] != "NTLM") return res0;
+        !res0.headers[HttpHeaders.wwwAuthenticateHeader].contains("NTLM"))
+      return res0;
 
     String msg1 = createType1Message(
       domain: domain,
       workstation: workstation,
     );
+
     Response res2 = await request({
       HttpHeaders.authorizationHeader: msg1,
     }..addAll(headers));
@@ -71,6 +73,7 @@ class NTLMClient {
       lmPassword: lmPassword,
       ntPassword: ntPassword,
     );
+
     Response res3 = await request({
       HttpHeaders.authorizationHeader: msg3,
     }..addAll(headers));
