@@ -1,6 +1,6 @@
 name: ntlm
-description: NTLM authentication for Dart/Flutter
-version: 1.0.1
+description: Library for making HTTP requests that require NTLM authentication
+version: 1.0.2
 homepage: https://github.com/mrbbot/ntlm
 author: MrBBot <me@mrbbot.co.uk>
 
