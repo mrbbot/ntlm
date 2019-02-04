@@ -8,8 +8,7 @@ Add the dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  ntlm:
-    git: git://github.com/mrbbot/ntlm.git
+  ntlm: ^1.0.0
 ```
 
 ## Example
@@ -45,12 +44,6 @@ NTLMClient client = new NTLMClient(
   ntPassword: ntPassword,
 );
 ```
-
-## TODO
-
-- [ ] Add dartdocs
-- [ ] Integrate on top of `package:http`'s BaseClient (described [here](https://pub.dartlang.org/packages/http))
-- [ ] Proper testing
 
 ## Acknowledgements
 

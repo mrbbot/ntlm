@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ntlm/src/messages/common/utils.dart';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
 
+/// Creates a type 1 NTLM message from the [domain] and [workstation]
 String createType1Message({String domain = "", String workstation = ""}) {
   domain = domain.toUpperCase();
   workstation = workstation.toUpperCase();

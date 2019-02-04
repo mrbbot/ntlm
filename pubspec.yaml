@@ -1,8 +1,8 @@
 name: ntlm
-description: NTLM authentication for Dart
-# version: 1.0.0
-# homepage: https://www.example.com
-# author: MrBBot <email@example.com>
+description: NTLM authentication for Dart/Flutter
+version: 1.0.0
+homepage: https://github.com/mrbbot/ntlm
+author: MrBBot <me@mrbbot.co.uk>
 
 environment:
   sdk: '>=2.0.0 <3.0.0'
@@ -10,7 +10,7 @@ environment:
 dependencies:
   http: any
   utf: any
-  pointycastle: 1.0.0
+  pointycastle: ^1.0.0
   fixnum: any
 
 dev_dependencies:

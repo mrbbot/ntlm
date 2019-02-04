@@ -2,6 +2,9 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
 
+/// Data class for all information contained in the type 2 response.
+///
+/// Used to calculate the type 3 response.
 class Type2Message {
   Uint8List signature;
   int type;
@@ -40,6 +43,7 @@ class Type2Message {
   }
 }
 
+/// Extract the information from the type 2 [rawMsg] into an object.
 Type2Message parseType2Message(String rawMsg) {
   if (rawMsg.startsWith("NTLM ")) {
     rawMsg = rawMsg.substring("NTLM ".length);

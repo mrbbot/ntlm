@@ -1,16 +1,16 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:utf/utf.dart';
-import 'package:meta/meta.dart';
 import 'package:ntlm/src/messages/common/utils.dart';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
 import 'package:ntlm/src/messages/type2.dart';
 
+/// Creates a type 3 NTLM message based on the response in [msg2].
 String createType3Message(
   Type2Message msg2, {
   String domain = "",
   String workstation = "",
-  @required String username,
+  String username,
   String password,
   String lmPassword = null,
   String ntPassword = null,
