@@ -12,8 +12,8 @@ String createType3Message(
   String workstation = "",
   String username,
   String password,
-  String lmPassword = null,
-  String ntPassword = null,
+  String lmPassword,
+  String ntPassword,
 }) {
   if (password == null && (lmPassword == null || ntPassword == null)) {
     throw new ArgumentError(

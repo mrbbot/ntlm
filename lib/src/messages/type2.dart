@@ -63,8 +63,7 @@ Type2Message parseType2Message(String rawMsg) {
   msg.targetNameLength = bufView.getInt16(12, Endian.little);
   msg.targetNameMaxLength = bufView.getInt16(14, Endian.little);
   msg.targetNameOffset = bufView.getInt32(16, Endian.little);
-  msg.targetName =
-      buf.asUint8List(msg.targetNameOffset, msg.targetNameLength);
+  msg.targetName = buf.asUint8List(msg.targetNameOffset, msg.targetNameLength);
 
   msg.negotiateFlags = bufView.getInt32(20, Endian.little);
   msg.serverChallenge = buf.asUint8List(24, 8);

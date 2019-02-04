@@ -35,18 +35,15 @@ class DESEngine extends BaseBlockCipher {
 
   @override
   int processBlock(Uint8List inp, int inpOff, Uint8List out, int outOff) {
-    if (_workingKey == null)
-    {
+    if (_workingKey == null) {
       throw new StateError("DES engine not initialised");
     }
 
-    if ((inpOff + _BLOCK_SIZE) > inp.length)
-    {
+    if ((inpOff + _BLOCK_SIZE) > inp.length) {
       throw new ArgumentError("input buffer too short");
     }
 
-    if ((outOff + _BLOCK_SIZE) > out.length)
-    {
+    if ((outOff + _BLOCK_SIZE) > out.length) {
       throw new ArgumentError("output buffer too short");
     }
 
@@ -63,7 +60,9 @@ class DESEngine extends BaseBlockCipher {
     for (int j = 0; j < 56; j++) {
       Int32 l = pc1[j];
 
-      pc1m[j] = ((key[l.shiftRightUnsigned(3).toInt()] & bytebit[(l & 7).toInt()]) != 0);
+      pc1m[j] =
+          ((key[l.shiftRightUnsigned(3).toInt()] & bytebit[(l & 7).toInt()]) !=
+              0);
     }
 
     for (Int32 i = new Int32(0); i < 16; i++) {

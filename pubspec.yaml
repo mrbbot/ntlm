@@ -1,6 +1,6 @@
 name: ntlm
 description: NTLM authentication for Dart/Flutter
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/mrbbot/ntlm
 author: MrBBot <me@mrbbot.co.uk>
 
@@ -8,10 +8,10 @@ environment:
   sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
-  http: any
-  utf: any
+  http: ^0.12.0
+  utf: ^0.9.0
   pointycastle: ^1.0.0
-  fixnum: any
+  fixnum: ^0.10.0
 
 dev_dependencies:
   test: any

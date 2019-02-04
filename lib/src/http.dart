@@ -59,9 +59,9 @@ class NTLMClient {
     this.domain = "",
     this.workstation = "",
     this.username,
-    this.password = null,
-    this.lmPassword = null,
-    this.ntPassword = null,
+    this.password,
+    this.lmPassword,
+    this.ntPassword,
     Client inner,
   }) {
     if (this.password == null &&
