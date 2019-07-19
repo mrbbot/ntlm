@@ -102,8 +102,17 @@ class NTLMClient {
     }..addAll(headers));
 
     String res2Authenticate = res2.headers[HttpHeaders.wwwAuthenticateHeader];
-    if (!res2Authenticate.startsWith("NTLM ")) return res0;
-    Type2Message msg2 = parseType2Message(res2Authenticate);
+    List<String> res2AuthenticateParts = res2Authenticate.split(",");
+    String rawMsg2 = null;
+    for(String res2AuthenticatePart in res2AuthenticateParts) {
+      if(res2AuthenticatePart.startsWith("NTLM ")) {
+        rawMsg2 = res2AuthenticatePart;
+        break;
+      }
+    }
+
+    if (rawMsg2 == null) return res0;
+    Type2Message msg2 = parseType2Message(rawMsg2);
 
     String msg3 = createType3Message(
       msg2,
