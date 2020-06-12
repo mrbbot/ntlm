@@ -91,8 +91,10 @@ class NTLMClient {
   }) async {
     headers ??= <String, String>{};
 
-    BaseResponse res0 = await request(headers);
+    var res0 = await request(headers);
+    print(res0.headers);
     if (res0.statusCode == 200 ||
+        !res0.headers.containsKey(_wwwAuthenticateHeader) ||
         !res0.headers[_wwwAuthenticateHeader].contains('NTLM')) {
       return res0;
     }
@@ -102,7 +104,7 @@ class NTLMClient {
       workstation: workstation,
     );
 
-    BaseResponse res2 = await request({
+    var res2 = await request({
       _authorizationHeader: msg1,
     }..addAll(headers));
 
@@ -205,13 +207,14 @@ class NTLMClient {
   /// Sends a MultipartRequest authenticating with NTLM
   Future<StreamedResponse> multipart(MultipartRequest request) {
     return _ntlm<StreamedResponse>(
-        headers: request.headers,
-        request: (ntlmHeaders) {
-          var copy = MultipartRequest(request.method, request.url)
-            ..fields.addAll(request.fields)
-            ..files.addAll(request.files)
-            ..headers.addAll(ntlmHeaders);
-          return _inner.send(copy);
-        });
+      headers: request.headers,
+      request: (ntlmHeaders) {
+        var copy = MultipartRequest(request.method, request.url)
+          ..headers.addAll(ntlmHeaders)
+          ..fields.addAll(request.fields)
+          ..files.addAll(request.files);
+        return _inner.send(copy);
+      },
+    );
   }
 }

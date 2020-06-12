@@ -45,6 +45,16 @@ NTLMClient client = new NTLMClient(
 );
 ```
 
+## Flutter Web Support
+
+For cross-origin requests, make sure your server includes the following header in responses:
+
+```
+Access-Control-Expose-Headers: WWW-Authenticate
+```
+
+This allows the package to view NTLM messages sent by the server.
+
 ## Acknowledgements
 
 Created from templates made available by Stagehand under a BSD-style
