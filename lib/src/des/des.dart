@@ -1,22 +1,21 @@
-import "dart:typed_data";
-
-import "package:pointycastle/api.dart";
-import "package:pointycastle/src/impl/base_block_cipher.dart";
-import "package:pointycastle/src/ufixnum.dart";
-import "package:pointycastle/src/registry/registry.dart";
-import 'des_constants.dart';
+import 'dart:typed_data';
+import 'package:pointycastle/api.dart';
+import 'package:pointycastle/src/impl/base_block_cipher.dart';
+import 'package:pointycastle/src/ufixnum.dart';
+import 'package:pointycastle/src/registry/registry.dart';
 import 'package:fixnum/fixnum.dart';
+import 'package:ntlm/src/des/des_constants.dart';
 
 class DESEngine extends BaseBlockCipher {
   static final FactoryConfig FACTORY_CONFIG =
-      new StaticFactoryConfig(BlockCipher, "DES", () => new DESEngine());
+      StaticFactoryConfig(BlockCipher, 'DES', () => DESEngine());
 
   static const _BLOCK_SIZE = 8;
 
   List<Int32> _workingKey;
 
   @override
-  String get algorithmName => "DES";
+  String get algorithmName => 'DES';
 
   @override
   int get blockSize => _BLOCK_SIZE;
@@ -27,7 +26,7 @@ class DESEngine extends BaseBlockCipher {
   @override
   void init(bool forEncryption, covariant KeyParameter params) {
     if (params.key.length > 8) {
-      throw new ArgumentError("DES key too long - should be 8 bytes");
+      throw ArgumentError('DES key too long - should be 8 bytes');
     }
 
     _workingKey = _generateWorkingKey(forEncryption, params.key);
@@ -36,15 +35,15 @@ class DESEngine extends BaseBlockCipher {
   @override
   int processBlock(Uint8List inp, int inpOff, Uint8List out, int outOff) {
     if (_workingKey == null) {
-      throw new StateError("DES engine not initialised");
+      throw StateError('DES engine not initialised');
     }
 
     if ((inpOff + _BLOCK_SIZE) > inp.length) {
-      throw new ArgumentError("input buffer too short");
+      throw ArgumentError('input buffer too short');
     }
 
     if ((outOff + _BLOCK_SIZE) > out.length) {
-      throw new ArgumentError("output buffer too short");
+      throw ArgumentError('output buffer too short');
     }
 
     _desFunc(_workingKey, inp, inpOff, out, outOff);
@@ -53,32 +52,32 @@ class DESEngine extends BaseBlockCipher {
   }
 
   List<Int32> _generateWorkingKey(bool encrypting, Uint8List key) {
-    List<Int32> newKey = new List<Int32>(32);
-    List<bool> pc1m = new List<bool>(56);
-    List<bool> pcr = new List<bool>(56);
+    var newKey = List<Int32>(32);
+    var pc1m = List<bool>(56);
+    var pcr = List<bool>(56);
 
-    for (int j = 0; j < 56; j++) {
-      Int32 l = pc1[j];
+    for (var j = 0; j < 56; j++) {
+      var l = pc1[j];
 
       pc1m[j] =
           ((key[l.shiftRightUnsigned(3).toInt()] & bytebit[(l & 7).toInt()]) !=
               0);
     }
 
-    for (Int32 i = new Int32(0); i < 16; i++) {
+    for (var i = Int32(0); i < 16; i++) {
       Int32 l, m, n;
 
       if (encrypting) {
         m = i << 1;
       } else {
-        m = (new Int32(15) - i) << 1;
+        m = (Int32(15) - i) << 1;
       }
 
       n = m + 1;
-      newKey[m.toInt()] = new Int32(0);
-      newKey[n.toInt()] = new Int32(0);
+      newKey[m.toInt()] = Int32(0);
+      newKey[n.toInt()] = Int32(0);
 
-      for (Int32 j = new Int32(0); j < 28; j++) {
+      for (var j = Int32(0); j < 28; j++) {
         l = j + totrot[i.toInt()];
         if (l < 28) {
           pcr[j.toInt()] = pc1m[l.toInt()];
@@ -87,7 +86,7 @@ class DESEngine extends BaseBlockCipher {
         }
       }
 
-      for (Int32 j = new Int32(28); j < 56; j++) {
+      for (var j = Int32(28); j < 56; j++) {
         l = j + totrot[i.toInt()];
         if (l < 56) {
           pcr[j.toInt()] = pc1m[l.toInt()];
@@ -96,7 +95,7 @@ class DESEngine extends BaseBlockCipher {
         }
       }
 
-      for (Int32 j = new Int32(0); j < 24; j++) {
+      for (var j = Int32(0); j < 24; j++) {
         if (pcr[pc2[j.toInt()].toInt()]) {
           newKey[m.toInt()] |= bigbyte[j.toInt()];
         }
@@ -110,7 +109,7 @@ class DESEngine extends BaseBlockCipher {
     //
     // store the processed key
     //
-    for (int i = 0; i != 32; i += 2) {
+    for (var i = 0; i != 32; i += 2) {
       Int32 i1, i2;
 
       i1 = newKey[i];
@@ -134,8 +133,8 @@ class DESEngine extends BaseBlockCipher {
       List<Int32> wKey, Uint8List inp, int inOff, Uint8List out, int outOff) {
     Int32 work, right, left;
 
-    left = new Int32(unpack32(inp, inOff, Endian.big));
-    right = new Int32(unpack32(inp, inOff + 4, Endian.big));
+    left = Int32(unpack32(inp, inOff, Endian.big));
+    right = Int32(unpack32(inp, inOff + 4, Endian.big));
 
     work = ((left.shiftRightUnsigned(4)) ^ right) & 0x0f0f0f0f;
     right ^= work;
@@ -155,7 +154,7 @@ class DESEngine extends BaseBlockCipher {
     right ^= work;
     left = (left << 1) | (left.shiftRightUnsigned(31));
 
-    for (int round = 0; round < 8; round++) {
+    for (var round = 0; round < 8; round++) {
       Int32 fval;
 
       work = (right << 28) | (right.shiftRightUnsigned(4));

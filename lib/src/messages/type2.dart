@@ -1,5 +1,5 @@
-import 'dart:typed_data';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
 
 /// Data class for all information contained in the type 2 response.
@@ -22,42 +22,42 @@ class Type2Message {
 
   @override
   String toString() {
-    return "---BEGIN TYPE 2 MESSAGE---\n"
-        "Signature:        ${ascii.decode(signature.toList(), allowInvalid: true)}\n"
-        "  Raw:            ${signature.toList()}\n"
-        "Type:             $type\n"
-        "Target Name:      ${ascii.decode(targetName.toList(), allowInvalid: true)}\n"
-        "  Length:         $targetNameLength\n"
-        "  Max Length:     $targetNameMaxLength\n"
-        "  Offset:         $targetNameOffset\n"
-        "  Raw:            ${targetName.toList()}\n"
-        "Negotiate Flags:  $negotiateFlags\n"
-        "Server Challenge: ${serverChallenge.toList()}\n"
-        "Reserved:         ${reserved.toList()}\n"
-        "Target Info:      ${ascii.decode(targetInfo.toList(), allowInvalid: true)}\n"
-        "  Length:         $targetInfoLength\n"
-        "  Max Length:     $targetInfoMaxLength\n"
-        "  Offset:         $targetInfoOffset\n"
-        "  Raw:            ${targetInfo.toList()}\n"
-        "---END TYPE 2 MESSAGE---";
+    return '---BEGIN TYPE 2 MESSAGE---\n'
+        'Signature:        ${ascii.decode(signature.toList(), allowInvalid: true)}\n'
+        '  Raw:            ${signature.toList()}\n'
+        'Type:             $type\n'
+        'Target Name:      ${ascii.decode(targetName.toList(), allowInvalid: true)}\n'
+        '  Length:         $targetNameLength\n'
+        '  Max Length:     $targetNameMaxLength\n'
+        '  Offset:         $targetNameOffset\n'
+        '  Raw:            ${targetName.toList()}\n'
+        'Negotiate Flags:  $negotiateFlags\n'
+        'Server Challenge: ${serverChallenge.toList()}\n'
+        'Reserved:         ${reserved.toList()}\n'
+        'Target Info:      ${ascii.decode(targetInfo.toList(), allowInvalid: true)}\n'
+        '  Length:         $targetInfoLength\n'
+        '  Max Length:     $targetInfoMaxLength\n'
+        '  Offset:         $targetInfoOffset\n'
+        '  Raw:            ${targetInfo.toList()}\n'
+        '---END TYPE 2 MESSAGE---';
   }
 }
 
 /// Extract the information from the type 2 [rawMsg] into an object.
 Type2Message parseType2Message(String rawMsg) {
-  if (rawMsg.startsWith("NTLM ")) {
-    rawMsg = rawMsg.substring("NTLM ".length);
+  if (rawMsg.startsWith('NTLM ')) {
+    rawMsg = rawMsg.substring('NTLM '.length);
   }
 
-  ByteBuffer buf = base64Decode(rawMsg).buffer;
-  ByteData bufView = new ByteData.view(buf);
-  Type2Message msg = new Type2Message();
+  var buf = base64Decode(rawMsg).buffer;
+  var bufView = ByteData.view(buf);
+  var msg = Type2Message();
 
   msg.signature = buf.asUint8List(0, 8);
   msg.type = bufView.getInt16(8, Endian.little);
 
   if (msg.type != 2) {
-    throw new ArgumentError("A type 2 response was not passed!");
+    throw ArgumentError('A type 2 response was not passed!');
   }
 
   msg.targetNameLength = bufView.getInt16(12, Endian.little);

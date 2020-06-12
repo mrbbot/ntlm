@@ -1,23 +1,23 @@
-import 'dart:typed_data';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:ntlm/src/messages/common/utils.dart';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
 
 /// Creates a type 1 NTLM message from the [domain] and [workstation]
-String createType1Message({String domain = "", String workstation = ""}) {
+String createType1Message({String domain = '', String workstation = ''}) {
   domain = domain.toUpperCase();
   workstation = workstation.toUpperCase();
-  const signature = "NTLMSSP\x00";
+  const signature = 'NTLMSSP\x00';
 
   const BODY_LENGTH = 40;
 
-  int type1Flags = flags.NTLM_TYPE1_FLAGS;
-  if (domain == "") {
+  var type1Flags = flags.NTLM_TYPE1_FLAGS;
+  if (domain == '') {
     type1Flags -= flags.NTLM_NegotiateOemDomainSupplied;
   }
 
-  int pos = 0;
-  ByteData buf = new ByteData(BODY_LENGTH + domain.length + workstation.length);
+  var pos = 0;
+  var buf = ByteData(BODY_LENGTH + domain.length + workstation.length);
 
   // protocol
   write(buf, ascii.encode(signature), pos, signature.length);
@@ -78,5 +78,5 @@ String createType1Message({String domain = "", String workstation = ""}) {
   write(buf, ascii.encode(domain), pos, domain.length);
   pos += domain.length;
 
-  return "NTLM ${base64Encode(buf.buffer.asUint8List())}";
+  return 'NTLM ${base64Encode(buf.buffer.asUint8List())}';
 }

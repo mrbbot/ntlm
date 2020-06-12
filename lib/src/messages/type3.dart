@@ -1,5 +1,5 @@
-import 'dart:typed_data';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:utf/utf.dart';
 import 'package:ntlm/src/messages/common/utils.dart';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
@@ -8,66 +8,65 @@ import 'package:ntlm/src/messages/type2.dart';
 /// Creates a type 3 NTLM message based on the response in [msg2].
 String createType3Message(
   Type2Message msg2, {
-  String domain = "",
-  String workstation = "",
+  String domain = '',
+  String workstation = '',
   String username,
   String password,
   String lmPassword,
   String ntPassword,
 }) {
   if (password == null && (lmPassword == null || ntPassword == null)) {
-    throw new ArgumentError(
-      "You must provide a password or the LM and NT hash of a password.",
+    throw ArgumentError(
+      'You must provide a password or the LM and NT hash of a password.',
     );
   }
 
-  Uint8List serverNonce = msg2.serverChallenge;
-  int negotiateFlags = msg2.negotiateFlags;
+  var serverNonce = msg2.serverChallenge;
+  var negotiateFlags = msg2.negotiateFlags;
 
-  bool isUnicode = negotiateFlags & flags.NTLM_NegotiateUnicode != 0;
-  bool isNegotiateExtendedSecurity =
+  var isUnicode = negotiateFlags & flags.NTLM_NegotiateUnicode != 0;
+  var isNegotiateExtendedSecurity =
       negotiateFlags & flags.NTLM_NegotiateExtendedSecurity != 0;
 
   const BODY_LENGTH = 72;
 
   domain = domain.toUpperCase();
   workstation = workstation.toUpperCase();
-  String encryptedRandomSessionKey = "";
+  var encryptedRandomSessionKey = '';
 
-  var encode = (String str) => isUnicode
-      ? new Uint8List.fromList(encodeUtf16le(str))
-      : ascii.encode(str);
-  Uint8List workstationBytes = encode(workstation);
-  Uint8List domainBytes = encode(domain);
-  Uint8List usernameBytes = encode(username);
-  Uint8List encryptedRandomSessionKeyBytes = encode(encryptedRandomSessionKey);
+  var encode = (String str) =>
+      isUnicode ? Uint8List.fromList(encodeUtf16le(str)) : ascii.encode(str);
+  var workstationBytes = encode(workstation);
+  var domainBytes = encode(domain);
+  var usernameBytes = encode(username);
+  var encryptedRandomSessionKeyBytes = encode(encryptedRandomSessionKey);
 
-  Uint8List lmChallengeResponse = calculateResponse(
+  var lmChallengeResponse = calculateResponse(
       lmPassword != null
           ? base64Decode(lmPassword)
           : createLMHashedPasswordV1(password),
       serverNonce);
-  Uint8List ntChallengeResponse = calculateResponse(
+  var ntChallengeResponse = calculateResponse(
       ntPassword != null
           ? base64Decode(ntPassword)
           : createNTHashedPasswordV1(password),
       serverNonce);
   if (isNegotiateExtendedSecurity) {
-    Uint8List passwordHash = ntPassword != null
+    var passwordHash = ntPassword != null
         ? base64Decode(ntPassword)
         : createNTHashedPasswordV1(password);
-    Uint8List clientNonce = createRandomNonce();
-    Map<String, Uint8List> challenges =
+    var clientNonce = createRandomNonce();
+    var challenges =
         calculateNTLM2Response(passwordHash, serverNonce, clientNonce);
 
-    lmChallengeResponse = challenges["LM"];
-    ntChallengeResponse = challenges["NT"];
+    lmChallengeResponse = challenges['LM'];
+    ntChallengeResponse = challenges['NT'];
   }
 
-  const signature = "NTLMSSP\x00";
+  const signature = 'NTLMSSP\x00';
 
-  int pos = 0;
-  ByteData buf = new ByteData(
+  var pos = 0;
+  var buf = ByteData(
     BODY_LENGTH +
         domainBytes.length +
         usernameBytes.length +
@@ -206,5 +205,5 @@ String createType3Message(
       encryptedRandomSessionKeyBytes.length);
   pos += encryptedRandomSessionKeyBytes.length;
 
-  return "NTLM ${base64Encode(buf.buffer.asUint8List())}";
+  return 'NTLM ${base64Encode(buf.buffer.asUint8List())}';
 }
