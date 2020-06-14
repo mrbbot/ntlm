@@ -8,7 +8,7 @@ Add the dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  ntlm: ^1.1.0
+  ntlm: ^1.2.0
 ```
 
 ## Example
@@ -47,13 +47,16 @@ NTLMClient client = new NTLMClient(
 
 ## Flutter Web Support
 
-For cross-origin requests, make sure your server includes the following header in responses:
+For cross-origin requests, make sure your server includes the following headers in responses:
 
 ```
+Access-Control-Allow-Origin: <your_origin>
 Access-Control-Expose-Headers: WWW-Authenticate
+Access-Control-Allow-Headers: Authorization
+Access-Control-Allow-Credentials: true
 ```
 
-This allows the package to view NTLM messages sent by the server.
+This allows the package to both view NTLM messages sent by the server and send requests with NTLM messages.
 
 ## Acknowledgements
 

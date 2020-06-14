@@ -92,7 +92,6 @@ class NTLMClient {
     headers ??= <String, String>{};
 
     var res0 = await request(headers);
-    print(res0.headers);
     if (res0.statusCode == 200 ||
         !res0.headers.containsKey(_wwwAuthenticateHeader) ||
         !res0.headers[_wwwAuthenticateHeader].contains('NTLM')) {
@@ -109,8 +108,18 @@ class NTLMClient {
     }..addAll(headers));
 
     var res2Authenticate = res2.headers[_wwwAuthenticateHeader];
-    if (!res2Authenticate.startsWith('NTLM ')) return res0;
-    var msg2 = parseType2Message(res2Authenticate);
+    var res2AuthenticateParts = res2Authenticate.split(',');
+    String rawMsg2;
+    for (var res2AuthenticatePart in res2AuthenticateParts) {
+      var trimmedPart = res2AuthenticatePart.trim();
+      if (trimmedPart.startsWith('NTLM ')) {
+        rawMsg2 = trimmedPart;
+        break;
+      }
+    }
+
+    if (rawMsg2 == null) return res0;
+    var msg2 = parseType2Message(rawMsg2);
 
     var msg3 = createType3Message(
       msg2,
