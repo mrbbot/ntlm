@@ -56,11 +56,11 @@ String createType3Message(
         ? base64Decode(ntPassword)
         : createNTHashedPasswordV1(password);
     var clientNonce = createRandomNonce();
-    var challenges =
-        calculateNTLM2Response(passwordHash, serverNonce, clientNonce);
 
-    lmChallengeResponse = challenges['LM'];
-    ntChallengeResponse = challenges['NT'];
+    lmChallengeResponse = calculateLMResponseV2(
+        msg2.serverChallenge, username, passwordHash, clientNonce);
+    ntChallengeResponse =
+        calculateNTLMResponseV2(msg2, username, passwordHash, clientNonce);
   }
 
   const signature = 'NTLMSSP\x00';

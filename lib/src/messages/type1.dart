@@ -15,6 +15,9 @@ String createType1Message({String domain = '', String workstation = ''}) {
   if (domain == '') {
     type1Flags -= flags.NTLM_NegotiateOemDomainSupplied;
   }
+  if (workstation == '') {
+    type1Flags -= flags.NTLM_NegotiateOemWorkstationSupplied;
+  }
 
   var pos = 0;
   var buf = ByteData(BODY_LENGTH + domain.length + workstation.length);
@@ -36,7 +39,8 @@ String createType1Message({String domain = '', String workstation = ''}) {
   buf.setUint16(pos, domain.length, Endian.little);
   pos += 2;
   // domain buffer offset
-  buf.setUint32(pos, BODY_LENGTH + workstation.length, Endian.little);
+  var domainOffset = domain == '' ? 0 : BODY_LENGTH + workstation.length;
+  buf.setUint32(pos, domainOffset, Endian.little);
   pos += 4;
 
   // workstation length
@@ -46,7 +50,8 @@ String createType1Message({String domain = '', String workstation = ''}) {
   buf.setUint16(pos, workstation.length, Endian.little);
   pos += 2;
   // workstation buffer offset
-  buf.setUint32(pos, BODY_LENGTH, Endian.little);
+  var workstationOffset = workstation == '' ? 0 : BODY_LENGTH;
+  buf.setUint32(pos, workstationOffset, Endian.little);
   pos += 4;
 
   // ProductMajorVersion

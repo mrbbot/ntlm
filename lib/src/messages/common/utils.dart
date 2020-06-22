@@ -6,7 +6,9 @@ import 'package:pointycastle/api.dart';
 import 'package:pointycastle/digests/md4.dart';
 import 'package:pointycastle/digests/md5.dart';
 import 'package:pointycastle/block/modes/ecb.dart';
+import 'package:pointycastle/macs/hmac.dart';
 import 'package:ntlm/src/des/des.dart';
+import 'package:ntlm/src/messages/type2.dart';
 
 void write(ByteData buf, Uint8List data, int offset, int length) {
   for (var i = 0; i < length; i++) {
@@ -85,6 +87,14 @@ Uint8List createNTHashedPasswordV1(String password) {
   return md4.process(Uint8List.fromList(unicodePassword));
 }
 
+Uint8List createNTHashedPasswordV2(String username, Uint8List ntPassword) {
+  var hmac = HMac(MD5Digest(), 64);
+  hmac.init(KeyParameter(ntPassword));
+  return hmac.process(
+    Uint8List.fromList(utf.encodeUtf16le(username.toUpperCase())),
+  );
+}
+
 Uint8List calculateResponse(Uint8List hash, Uint8List challenge) {
   var keyBytes = List.filled(21, 0);
   _arrayCopy(hash, 0, keyBytes, 0, 16);
@@ -109,27 +119,68 @@ Uint8List calculateResponse(Uint8List hash, Uint8List challenge) {
   return lmResponse;
 }
 
-Map<String, Uint8List> calculateNTLM2Response(Uint8List responseKeyNT,
-    Uint8List serverChallenge, Uint8List clientChallenge) {
-  var lmChallengeResponse =
-      Uint8List.fromList(List.filled(clientChallenge.length + 16, 0));
-  _arrayCopy(
-      clientChallenge, 0, lmChallengeResponse, 0, clientChallenge.length);
+Uint8List calculateLMResponseV2(
+  Uint8List serverChallenge,
+  String username,
+  Uint8List ntPassword,
+  Uint8List clientNonce,
+) {
+  var buf = ByteData(24);
+  var ntHash2 = createNTHashedPasswordV2(username, ntPassword);
+  var hmac = HMac(MD5Digest(), 64);
+  hmac.init(KeyParameter(ntHash2));
 
-  var buf = Uint8List.fromList(
-      List.filled(serverChallenge.length + clientChallenge.length, 0));
-  _arrayCopy(serverChallenge, 0, buf, 0, serverChallenge.length);
-  _arrayCopy(
-      clientChallenge, 0, buf, serverChallenge.length, clientChallenge.length);
-  var md5 = MD5Digest();
-  var session = md5.process(buf);
-  var ntChallengeResponse = calculateResponse(
-      responseKeyNT, Uint8List.fromList(session.sublist(0, 8)));
+  // Server Challenge
+  write(buf, serverChallenge, 8, serverChallenge.length);
+  // Client Nonce
+  write(buf, clientNonce, 16, clientNonce.length);
 
-  return {
-    'LM': lmChallengeResponse,
-    'NT': ntChallengeResponse,
-  };
+  // HMAC everything but the 1st 8 bytes, and put the result as the 1st 8 bytes
+  var hashed = hmac.process(buf.buffer.asUint8List(8));
+  write(buf, hashed, 0, hashed.length);
+  return buf.buffer.asUint8List();
+}
+
+Uint8List calculateNTLMResponseV2(
+  Type2Message msg2,
+  String username,
+  Uint8List ntPassword,
+  Uint8List clientNonce,
+) {
+  var buf = ByteData(48 + msg2.targetInfo.length);
+  var ntHash2 = createNTHashedPasswordV2(username, ntPassword);
+  var hmac = HMac(MD5Digest(), 64);
+  hmac.init(KeyParameter(ntHash2));
+
+  // Server Challenge
+  write(buf, msg2.serverChallenge, 8, msg2.serverChallenge.length);
+  // Blob Signature
+  buf.setUint32(16, 0x01010000, Endian.big);
+  // Reserved
+  buf.setUint32(20, 0, Endian.little);
+
+  // Timestamp: 100 nanosecond ticks elapsed since midnight of January 1, 1601
+  // (11644473600000 = milliseconds between 1970 and 1601)
+  var timestamp =
+      (DateTime.now().millisecondsSinceEpoch + 11644473600000) * 10000;
+  buf.setUint64(24, timestamp);
+
+  // Client Nonce
+  write(buf, clientNonce, 32, clientNonce.length);
+
+  // Zero
+  buf.setUint32(40, 0, Endian.little);
+
+  // Target Info Block
+  write(buf, msg2.targetInfo, 44, msg2.targetInfo.length);
+
+  // Zero
+  buf.setUint32(44 + msg2.targetInfo.length, 0, Endian.little);
+
+  // HMAC everything but the 1st 8 bytes, and put the result as the 1st 8 bytes
+  var hashed = hmac.process(buf.buffer.asUint8List(8));
+  write(buf, hashed, 0, hashed.length);
+  return buf.buffer.asUint8List();
 }
 
 math.Random _random = math.Random();
