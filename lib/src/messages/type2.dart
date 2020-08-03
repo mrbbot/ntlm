@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
+import 'package:ntlm/src/messages/common/prefixes.dart';
 
 /// Data class for all information contained in the type 2 response.
 ///
@@ -44,9 +45,12 @@ class Type2Message {
 }
 
 /// Extract the information from the type 2 [rawMsg] into an object.
-Type2Message parseType2Message(String rawMsg, [String headerPrefix = 'NTLM']) {
-  if (rawMsg.startsWith('${headerPrefix} ')) {
-    rawMsg = rawMsg.substring('${headerPrefix} '.length);
+Type2Message parseType2Message(
+  String rawMsg, {
+  String headerPrefix = kHeaderPrefixNTLM,
+}) {
+  if (rawMsg.startsWith('$headerPrefix ')) {
+    rawMsg = rawMsg.substring('$headerPrefix '.length);
   }
 
   var buf = base64Decode(rawMsg).buffer;

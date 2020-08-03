@@ -45,6 +45,22 @@ NTLMClient client = new NTLMClient(
 );
 ```
 
+If your server only supports the
+[`Negotiate` authentication scheme](https://docs.microsoft.com/en-us/dotnet/framework/wcf/feature-details/understanding-http-authentication#http-authentication-schemes),
+you can change the header prefix to `Negotiate` using the `headerPrefix` parameter:
+
+```dart
+NTLMClient client = new NTLMClient(
+  domain: "",
+  workstation: "LAPTOP",
+  username: "User208",
+  password: "password",
+  headerPrefix: kHeaderPrefixNegotiate,
+);
+```
+
+Note that this still only uses the NTLM authentication scheme, not Kerberos.
+
 ## Flutter Web Support
 
 For cross-origin requests, make sure your server includes the following headers in responses:
