@@ -1,3 +1,7 @@
+## 1.3.0
+
+- Add `headerPrefix` parameter to support servers only using the `Negotiate` authentication scheme
+
 ## 1.2.0
 
 - Add support for authenticating when the server supports other authentication methods in addition to NTLM
