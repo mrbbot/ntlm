@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:utf/utf.dart';
-import 'package:ntlm/src/messages/common/utils.dart';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
+import 'package:ntlm/src/messages/common/prefixes.dart';
+import 'package:ntlm/src/messages/common/utils.dart';
 import 'package:ntlm/src/messages/type2.dart';
 
 /// Creates a type 3 NTLM message based on the response in [msg2].
@@ -14,6 +15,7 @@ String createType3Message(
   String password,
   String lmPassword,
   String ntPassword,
+  String headerPrefix = kHeaderPrefixNTLM,
 }) {
   if (password == null && (lmPassword == null || ntPassword == null)) {
     throw ArgumentError(
@@ -205,5 +207,5 @@ String createType3Message(
       encryptedRandomSessionKeyBytes.length);
   pos += encryptedRandomSessionKeyBytes.length;
 
-  return 'NTLM ${base64Encode(buf.buffer.asUint8List())}';
+  return '$headerPrefix ${base64Encode(buf.buffer.asUint8List())}';
 }
