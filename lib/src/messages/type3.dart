@@ -14,6 +14,7 @@ String createType3Message(
   String password,
   String lmPassword,
   String ntPassword,
+  String headerPrefix = 'NTLM'
 }) {
   if (password == null && (lmPassword == null || ntPassword == null)) {
     throw ArgumentError(
@@ -205,5 +206,5 @@ String createType3Message(
       encryptedRandomSessionKeyBytes.length);
   pos += encryptedRandomSessionKeyBytes.length;
 
-  return 'NTLM ${base64Encode(buf.buffer.asUint8List())}';
+  return '${headerPrefix} ${base64Encode(buf.buffer.asUint8List())}';
 }

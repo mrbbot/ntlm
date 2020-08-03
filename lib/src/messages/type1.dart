@@ -4,7 +4,7 @@ import 'package:ntlm/src/messages/common/utils.dart';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
 
 /// Creates a type 1 NTLM message from the [domain] and [workstation]
-String createType1Message({String domain = '', String workstation = ''}) {
+String createType1Message({String domain = '', String workstation = '', String headerPrefix = 'NTLM'}) {
   domain = domain.toUpperCase();
   workstation = workstation.toUpperCase();
   const signature = 'NTLMSSP\x00';
@@ -83,5 +83,5 @@ String createType1Message({String domain = '', String workstation = ''}) {
   write(buf, ascii.encode(domain), pos, domain.length);
   pos += domain.length;
 
-  return 'NTLM ${base64Encode(buf.buffer.asUint8List())}';
+  return '${headerPrefix} ${base64Encode(buf.buffer.asUint8List())}';
 }

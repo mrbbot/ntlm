@@ -44,9 +44,9 @@ class Type2Message {
 }
 
 /// Extract the information from the type 2 [rawMsg] into an object.
-Type2Message parseType2Message(String rawMsg) {
-  if (rawMsg.startsWith('NTLM ')) {
-    rawMsg = rawMsg.substring('NTLM '.length);
+Type2Message parseType2Message(String rawMsg, [String headerPrefix = 'NTLM']) {
+  if (rawMsg.startsWith('${headerPrefix} ')) {
+    rawMsg = rawMsg.substring('${headerPrefix} '.length);
   }
 
   var buf = base64Decode(rawMsg).buffer;
