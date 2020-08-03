@@ -33,8 +33,8 @@ class NTLMClient {
   /// The NT hash of the user's password
   String ntPassword;
 
-  /// The prefix for the www-authenticaate / authorization header
-  /// Usually either of 'NTLM' or 'Negotiate'
+  /// The prefix for 'www-authenticate'/'authorization' headers (usually
+  /// either [kHeaderPrefixNTLM] or [kHeaderPrefixNegotiate])
   String headerPrefix;
 
   /// The HTTP client used by this NTLMClient to make requests
@@ -74,7 +74,7 @@ class NTLMClient {
     this.lmPassword,
     this.ntPassword,
     Client inner,
-    this.headerPrefix = 'NTLM',
+    this.headerPrefix = kHeaderPrefixNTLM,
   }) {
     if (password == null && (lmPassword == null || ntPassword == null)) {
       throw ArgumentError(
@@ -106,7 +106,7 @@ class NTLMClient {
     var msg1 = createType1Message(
       domain: domain,
       workstation: workstation,
-      headerPrefix: headerPrefix
+      headerPrefix: headerPrefix,
     );
 
     var res2 = await request({
@@ -118,14 +118,17 @@ class NTLMClient {
     String rawMsg2;
     for (var res2AuthenticatePart in res2AuthenticateParts) {
       var trimmedPart = res2AuthenticatePart.trim();
-      if (trimmedPart.startsWith('${headerPrefix} ')) {
+      if (trimmedPart.startsWith('$headerPrefix ')) {
         rawMsg2 = trimmedPart;
         break;
       }
     }
 
     if (rawMsg2 == null) return res0;
-    var msg2 = parseType2Message(rawMsg2, headerPrefix);
+    var msg2 = parseType2Message(
+      rawMsg2,
+      headerPrefix: headerPrefix,
+    );
 
     var msg3 = createType3Message(
       msg2,
@@ -135,7 +138,7 @@ class NTLMClient {
       password: password,
       lmPassword: lmPassword,
       ntPassword: ntPassword,
-      headerPrefix: headerPrefix
+      headerPrefix: headerPrefix,
     );
 
     var res3 = await request({
