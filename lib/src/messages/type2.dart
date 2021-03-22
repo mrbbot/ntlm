@@ -7,19 +7,35 @@ import 'package:ntlm/src/messages/common/prefixes.dart';
 ///
 /// Used to calculate the type 3 response.
 class Type2Message {
-  Uint8List signature;
-  int type;
-  int targetNameLength;
-  int targetNameMaxLength;
-  int targetNameOffset;
-  Uint8List targetName;
-  int negotiateFlags;
-  Uint8List serverChallenge;
-  Uint8List reserved;
-  int targetInfoLength;
-  int targetInfoMaxLength;
-  int targetInfoOffset;
-  Uint8List targetInfo;
+  final Uint8List signature;
+  final int type;
+  final int targetNameLength;
+  final int targetNameMaxLength;
+  final int targetNameOffset;
+  final Uint8List targetName;
+  final int negotiateFlags;
+  final Uint8List serverChallenge;
+  final Uint8List reserved;
+  final int? targetInfoLength;
+  final int? targetInfoMaxLength;
+  final int? targetInfoOffset;
+  final Uint8List? targetInfo;
+
+  const Type2Message({
+    required this.signature,
+    required this.type,
+    required this.targetNameLength,
+    required this.targetNameMaxLength,
+    required this.targetNameOffset,
+    required this.targetName,
+    required this.negotiateFlags,
+    required this.serverChallenge,
+    required this.reserved,
+    this.targetInfoLength,
+    this.targetInfoMaxLength,
+    this.targetInfoOffset,
+    this.targetInfo,
+  });
 
   @override
   String toString() {
@@ -35,11 +51,11 @@ class Type2Message {
         'Negotiate Flags:  $negotiateFlags\n'
         'Server Challenge: ${serverChallenge.toList()}\n'
         'Reserved:         ${reserved.toList()}\n'
-        'Target Info:      ${ascii.decode(targetInfo.toList(), allowInvalid: true)}\n'
+        'Target Info:      ${targetInfo == null ? null : ascii.decode(targetInfo!.toList(), allowInvalid: true)}\n'
         '  Length:         $targetInfoLength\n'
         '  Max Length:     $targetInfoMaxLength\n'
         '  Offset:         $targetInfoOffset\n'
-        '  Raw:            ${targetInfo.toList()}\n'
+        '  Raw:            ${targetInfo?.toList()}\n'
         '---END TYPE 2 MESSAGE---';
   }
 }
@@ -53,33 +69,49 @@ Type2Message parseType2Message(
     rawMsg = rawMsg.substring('$headerPrefix '.length);
   }
 
-  var buf = base64Decode(rawMsg).buffer;
-  var bufView = ByteData.view(buf);
-  var msg = Type2Message();
+  final buf = base64Decode(rawMsg).buffer;
+  final bufView = ByteData.view(buf);
 
-  msg.signature = buf.asUint8List(0, 8);
-  msg.type = bufView.getInt16(8, Endian.little);
+  final signature = buf.asUint8List(0, 8);
+  final type = bufView.getInt16(8, Endian.little);
 
-  if (msg.type != 2) {
+  if (type != 2) {
     throw ArgumentError('A type 2 response was not passed!');
   }
 
-  msg.targetNameLength = bufView.getInt16(12, Endian.little);
-  msg.targetNameMaxLength = bufView.getInt16(14, Endian.little);
-  msg.targetNameOffset = bufView.getInt32(16, Endian.little);
-  msg.targetName = buf.asUint8List(msg.targetNameOffset, msg.targetNameLength);
+  final targetNameLength = bufView.getInt16(12, Endian.little);
+  final targetNameMaxLength = bufView.getInt16(14, Endian.little);
+  final targetNameOffset = bufView.getInt32(16, Endian.little);
+  final targetName = buf.asUint8List(targetNameOffset, targetNameLength);
 
-  msg.negotiateFlags = bufView.getInt32(20, Endian.little);
-  msg.serverChallenge = buf.asUint8List(24, 8);
-  msg.reserved = buf.asUint8List(32, 8);
+  final negotiateFlags = bufView.getInt32(20, Endian.little);
+  final serverChallenge = buf.asUint8List(24, 8);
+  final reserved = buf.asUint8List(32, 8);
 
-  if (msg.negotiateFlags & flags.NTLM_NegotiateTargetInfo != 0) {
-    msg.targetInfoLength = bufView.getInt16(40, Endian.little);
-    msg.targetInfoMaxLength = bufView.getInt16(42, Endian.little);
-    msg.targetInfoOffset = bufView.getInt32(44, Endian.little);
-    msg.targetInfo =
-        buf.asUint8List(msg.targetInfoOffset, msg.targetInfoLength);
+  int? targetInfoLength;
+  int? targetInfoMaxLength;
+  int? targetInfoOffset;
+  Uint8List? targetInfo;
+  if (negotiateFlags & flags.NTLM_NegotiateTargetInfo != 0) {
+    targetInfoLength = bufView.getInt16(40, Endian.little);
+    targetInfoMaxLength = bufView.getInt16(42, Endian.little);
+    targetInfoOffset = bufView.getInt32(44, Endian.little);
+    targetInfo = buf.asUint8List(targetInfoOffset, targetInfoLength);
   }
 
-  return msg;
+  return Type2Message(
+    signature: signature,
+    type: type,
+    targetNameLength: targetNameLength,
+    targetNameMaxLength: targetNameMaxLength,
+    targetNameOffset: targetNameOffset,
+    targetName: targetName,
+    negotiateFlags: negotiateFlags,
+    serverChallenge: serverChallenge,
+    reserved: reserved,
+    targetInfoLength: targetInfoLength,
+    targetInfoMaxLength: targetInfoMaxLength,
+    targetInfoOffset: targetInfoOffset,
+    targetInfo: targetInfo,
+  );
 }

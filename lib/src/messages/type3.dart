@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:utf/utf.dart';
 import 'package:ntlm/src/messages/common/flags.dart' as flags;
 import 'package:ntlm/src/messages/common/prefixes.dart';
 import 'package:ntlm/src/messages/common/utils.dart';
@@ -11,10 +10,10 @@ String createType3Message(
   Type2Message msg2, {
   String domain = '',
   String workstation = '',
-  String username,
-  String password,
-  String lmPassword,
-  String ntPassword,
+  required String username,
+  String? password,
+  String? lmPassword,
+  String? ntPassword,
   String headerPrefix = kHeaderPrefixNTLM,
 }) {
   if (password == null && (lmPassword == null || ntPassword == null)) {
@@ -36,8 +35,8 @@ String createType3Message(
   workstation = workstation.toUpperCase();
   var encryptedRandomSessionKey = '';
 
-  var encode = (String str) =>
-      isUnicode ? Uint8List.fromList(encodeUtf16le(str)) : ascii.encode(str);
+  var encode =
+      (String str) => isUnicode ? encodeUtf16le(str) : ascii.encode(str);
   var workstationBytes = encode(workstation);
   var domainBytes = encode(domain);
   var usernameBytes = encode(username);
@@ -46,17 +45,17 @@ String createType3Message(
   var lmChallengeResponse = calculateResponse(
       lmPassword != null
           ? base64Decode(lmPassword)
-          : createLMHashedPasswordV1(password),
+          : createLMHashedPasswordV1(password!),
       serverNonce);
   var ntChallengeResponse = calculateResponse(
       ntPassword != null
           ? base64Decode(ntPassword)
-          : createNTHashedPasswordV1(password),
+          : createNTHashedPasswordV1(password!),
       serverNonce);
   if (isNegotiateExtendedSecurity) {
     var passwordHash = ntPassword != null
         ? base64Decode(ntPassword)
-        : createNTHashedPasswordV1(password);
+        : createNTHashedPasswordV1(password!);
     var clientNonce = createRandomNonce();
 
     lmChallengeResponse = calculateLMResponseV2(

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'package:utf/utf.dart' as utf;
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/digests/md4.dart';
 import 'package:pointycastle/digests/md5.dart';
@@ -47,7 +46,7 @@ void _oddParity(List<int> bytes) {
 KeyParameter _createDESKey(List<int> bytes, int offset) {
   var uint8Bytes = Uint8List.fromList(bytes);
   var keyBytes = List<int>.generate(7, (i) => uint8Bytes[i + offset]);
-  var material = List<int>(8);
+  var material = List<int>.filled(8, 0);
   material[0] = keyBytes[0].toSigned(8);
   material[1] = (keyBytes[0] << 7 | (keyBytes[1] & 0xff) >> 1).toSigned(8);
   material[2] = (keyBytes[1] << 6 | (keyBytes[2] & 0xff) >> 2).toSigned(8);
@@ -61,6 +60,12 @@ KeyParameter _createDESKey(List<int> bytes, int offset) {
     Uint8List.fromList(material.map((v) => v.toUnsigned(8)).toList()),
   );
 }
+
+Uint8List encodeUtf16le(String s) => Uint8List.fromList(
+      s.codeUnits
+          .expand((codeUnit) => [codeUnit & 0xFF, codeUnit >> 8])
+          .toList(),
+    );
 
 Uint8List createLMHashedPasswordV1(String password) {
   var oemPassword = ascii.encode(password.toUpperCase());
@@ -82,17 +87,14 @@ Uint8List createLMHashedPasswordV1(String password) {
 }
 
 Uint8List createNTHashedPasswordV1(String password) {
-  var unicodePassword = utf.encodeUtf16le(password);
   Digest md4 = MD4Digest();
-  return md4.process(Uint8List.fromList(unicodePassword));
+  return md4.process(encodeUtf16le(password));
 }
 
 Uint8List createNTHashedPasswordV2(String username, Uint8List ntPassword) {
   var hmac = HMac(MD5Digest(), 64);
   hmac.init(KeyParameter(ntPassword));
-  return hmac.process(
-    Uint8List.fromList(utf.encodeUtf16le(username.toUpperCase())),
-  );
+  return hmac.process(encodeUtf16le(username.toUpperCase()));
 }
 
 Uint8List calculateResponse(Uint8List hash, Uint8List challenge) {
@@ -147,7 +149,7 @@ Uint8List calculateNTLMResponseV2(
   Uint8List ntPassword,
   Uint8List clientNonce,
 ) {
-  var buf = ByteData(48 + msg2.targetInfo.length);
+  var buf = ByteData(48 + msg2.targetInfo!.length);
   var ntHash2 = createNTHashedPasswordV2(username, ntPassword);
   var hmac = HMac(MD5Digest(), 64);
   hmac.init(KeyParameter(ntHash2));
@@ -172,10 +174,10 @@ Uint8List calculateNTLMResponseV2(
   buf.setUint32(40, 0, Endian.little);
 
   // Target Info Block
-  write(buf, msg2.targetInfo, 44, msg2.targetInfo.length);
+  write(buf, msg2.targetInfo!, 44, msg2.targetInfo!.length);
 
   // Zero
-  buf.setUint32(44 + msg2.targetInfo.length, 0, Endian.little);
+  buf.setUint32(44 + msg2.targetInfo!.length, 0, Endian.little);
 
   // HMAC everything but the 1st 8 bytes, and put the result as the 1st 8 bytes
   var hashed = hmac.process(buf.buffer.asUint8List(8));

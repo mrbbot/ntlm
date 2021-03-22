@@ -8,7 +8,7 @@ void main() {
     password: 'password',
   );
 
-  client.get('https://example.com/').then((res) {
+  client.get(Uri.parse('https://example.com/')).then((res) {
     print(res.body);
   });
 }

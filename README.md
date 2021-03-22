@@ -8,7 +8,7 @@ Add the dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  ntlm: ^1.3.0
+  ntlm: ^2.0.0
 ```
 
 ## Example
@@ -24,7 +24,7 @@ main() {
     password: "password",
   );
 
-  client.get("https://example.com/").then((res) {
+  client.get(Uri.parse("https://example.com/")).then((res) {
     print(res.body);
   });
 }

@@ -1,20 +1,11 @@
-import 'dart:async';
-import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart';
 import 'package:ntlm/src/messages/messages.dart';
 
 const _wwwAuthenticateHeader = 'www-authenticate';
 const _authorizationHeader = 'authorization';
 
-/// Callback for when a request needs to be made.
-///
-/// This is used to reduce duplication of the NTLM authentication code for all
-/// HTTP methods.
-typedef _RequestCallback<R extends BaseResponse> = Future<R> Function(
-  Map<String, String> ntlmHeaders,
-);
-
-class NTLMClient {
+class NTLMClient extends BaseClient {
   /// The NT domain used by this client to authenticate
   String domain;
 
@@ -25,20 +16,20 @@ class NTLMClient {
   String username;
 
   /// The password of the user trying to authenticate
-  String password;
+  String? password;
 
   /// The lan manager hash of the user's password
-  String lmPassword;
+  String? lmPassword;
 
   /// The NT hash of the user's password
-  String ntPassword;
+  String? ntPassword;
 
   /// The prefix for 'www-authenticate'/'authorization' headers (usually
   /// either [kHeaderPrefixNTLM] or [kHeaderPrefixNegotiate])
   String headerPrefix;
 
   /// The HTTP client used by this NTLMClient to make requests
-  Client _inner;
+  late Client _inner;
 
   /// Creates a new NTLM client
   ///
@@ -69,11 +60,11 @@ class NTLMClient {
   NTLMClient({
     this.domain = '',
     this.workstation = '',
-    this.username,
+    required this.username,
     this.password,
     this.lmPassword,
     this.ntPassword,
-    Client inner,
+    Client? inner,
     this.headerPrefix = kHeaderPrefixNTLM,
   }) {
     if (password == null && (lmPassword == null || ntPassword == null)) {
@@ -85,37 +76,45 @@ class NTLMClient {
     _inner = inner ?? Client();
   }
 
-  /// Function that does the handles NTLM authentication.
+  BaseRequest _copyRequest(BaseRequest request, Uint8List body) =>
+      Request(request.method, request.url)
+        ..persistentConnection = request.persistentConnection
+        ..followRedirects = request.followRedirects
+        ..maxRedirects = request.maxRedirects
+        ..headers.addAll(request.headers)
+        ..bodyBytes = body;
+
+  /// Function that actually does the NTLM authentication.
   ///
-  /// With the provided additional [headers], this function generates the
-  /// headers required to authenticate based on previous responses. The
-  /// responses are then retrieved through the [request] callback.
-  Future<R> _ntlm<R extends BaseResponse>({
-    Map<String, String> headers,
-    _RequestCallback<R> request,
-  }) async {
-    headers ??= <String, String>{};
+  /// This function generates the headers required to authenticate based on
+  /// previous responses.
+  @override
+  Future<StreamedResponse> send(BaseRequest originalReq) async {
+    // We need to be able to send a copy of the request with the Type 3 message
+    // header attached. Since request bodies can only be streamed once, read the
+    // entire body now so we can create request copies later on.
+    final body = await originalReq.finalize().toBytes();
 
-    var res0 = await request(headers);
-    if (res0.statusCode == 200 ||
-        !res0.headers.containsKey(_wwwAuthenticateHeader) ||
-        !res0.headers[_wwwAuthenticateHeader].contains(headerPrefix)) {
-      return res0;
-    }
-
-    var msg1 = createType1Message(
+    // 1. Send the initial request
+    final msg1 = createType1Message(
       domain: domain,
       workstation: workstation,
       headerPrefix: headerPrefix,
     );
 
-    var res2 = await request({
-      _authorizationHeader: msg1,
-    }..addAll(headers));
+    final req2 = _copyRequest(originalReq, body);
+    req2.headers[_authorizationHeader] = msg1;
+    final res2 = await _inner.send(req2);
 
-    var res2Authenticate = res2.headers[_wwwAuthenticateHeader];
-    var res2AuthenticateParts = res2Authenticate.split(',');
-    String rawMsg2;
+    // 2. Parse the Type 2 message
+    final res2Authenticate = res2.headers[_wwwAuthenticateHeader];
+    // If the initial request was successful or this isn't an NTLM request,
+    // return the initial response
+    if (res2.statusCode == 200 || res2Authenticate == null) return res2;
+    // Servers may support multiple authentication methods so we need to find
+    // the correct one
+    final res2AuthenticateParts = res2Authenticate.split(',');
+    String? rawMsg2;
     for (var res2AuthenticatePart in res2AuthenticateParts) {
       var trimmedPart = res2AuthenticatePart.trim();
       if (trimmedPart.startsWith('$headerPrefix ')) {
@@ -123,14 +122,17 @@ class NTLMClient {
         break;
       }
     }
-
-    if (rawMsg2 == null) return res0;
-    var msg2 = parseType2Message(
+    // If this isn't an NTLM request, return the initial response
+    if (rawMsg2 == null) return res2;
+    final msg2 = parseType2Message(
       rawMsg2,
       headerPrefix: headerPrefix,
     );
+    // Discard the body so we can reuse the connection (required by NTLM)
+    await res2.stream.drain();
 
-    var msg3 = createType3Message(
+    // 3. Send the authenticated request
+    final msg3 = createType3Message(
       msg2,
       domain: domain,
       workstation: workstation,
@@ -141,99 +143,13 @@ class NTLMClient {
       headerPrefix: headerPrefix,
     );
 
-    var res3 = await request({
-      _authorizationHeader: msg3,
-    }..addAll(headers));
+    final req3 = _copyRequest(originalReq, body);
+    req3.headers[_authorizationHeader] = msg3;
+    final res3 = await _inner.send(req3);
 
     return res3;
   }
 
-  /// Sends a HTTP GET request to the [url] authenticating with NTLM.
-  Future<Response> get(url, {Map<String, String> headers}) async {
-    return _ntlm<Response>(
-      headers: headers,
-      request: (ntlmHeaders) => _inner.get(
-        url,
-        headers: ntlmHeaders,
-      ),
-    );
-  }
-
-  /// Sends a HTTP POST request to the [url] authenticating with NTLM.
-  Future<Response> post(url,
-      {Map<String, String> headers, body, Encoding encoding}) {
-    return _ntlm<Response>(
-      headers: headers,
-      request: (ntlmHeaders) => _inner.post(
-        url,
-        headers: ntlmHeaders,
-        body: body,
-        encoding: encoding,
-      ),
-    );
-  }
-
-  /// Sends a HTTP PATCH request to the [url] authenticating with NTLM.
-  Future<Response> patch(url,
-      {Map<String, String> headers, body, Encoding encoding}) {
-    return _ntlm<Response>(
-      headers: headers,
-      request: (ntlmHeaders) => _inner.patch(
-        url,
-        headers: ntlmHeaders,
-        body: body,
-        encoding: encoding,
-      ),
-    );
-  }
-
-  /// Sends a HTTP PUT request to the [url] authenticating with NTLM.
-  Future<Response> put(url,
-      {Map<String, String> headers, body, Encoding encoding}) {
-    return _ntlm<Response>(
-      headers: headers,
-      request: (ntlmHeaders) => _inner.put(
-        url,
-        headers: ntlmHeaders,
-        body: body,
-        encoding: encoding,
-      ),
-    );
-  }
-
-  /// Sends a HTTP HEAD request to the [url] authenticating with NTLM.
-  Future<Response> head(url, {Map<String, String> headers}) {
-    return _ntlm<Response>(
-      headers: headers,
-      request: (ntlmHeaders) => _inner.head(
-        url,
-        headers: ntlmHeaders,
-      ),
-    );
-  }
-
-  /// Sends a HTTP DELETE request to the [url] authenticating with NTLM.
-  Future<Response> delete(url, {Map<String, String> headers}) {
-    return _ntlm<Response>(
-      headers: headers,
-      request: (ntlmHeaders) => _inner.delete(
-        url,
-        headers: ntlmHeaders,
-      ),
-    );
-  }
-
-  /// Sends a MultipartRequest authenticating with NTLM
-  Future<StreamedResponse> multipart(MultipartRequest request) {
-    return _ntlm<StreamedResponse>(
-      headers: request.headers,
-      request: (ntlmHeaders) {
-        var copy = MultipartRequest(request.method, request.url)
-          ..headers.addAll(ntlmHeaders)
-          ..fields.addAll(request.fields)
-          ..files.addAll(request.files);
-        return _inner.send(copy);
-      },
-    );
-  }
+  @Deprecated('Use the `NTLMClient.send` method instead')
+  Future<StreamedResponse> multipart(MultipartRequest request) => send(request);
 }

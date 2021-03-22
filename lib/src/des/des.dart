@@ -12,7 +12,7 @@ class DESEngine extends BaseBlockCipher {
 
   static const _BLOCK_SIZE = 8;
 
-  List<Int32> _workingKey;
+  List<Int32>? _workingKey;
 
   @override
   String get algorithmName => 'DES';
@@ -46,15 +46,15 @@ class DESEngine extends BaseBlockCipher {
       throw ArgumentError('output buffer too short');
     }
 
-    _desFunc(_workingKey, inp, inpOff, out, outOff);
+    _desFunc(_workingKey!, inp, inpOff, out, outOff);
 
     return _BLOCK_SIZE;
   }
 
   List<Int32> _generateWorkingKey(bool encrypting, Uint8List key) {
-    var newKey = List<Int32>(32);
-    var pc1m = List<bool>(56);
-    var pcr = List<bool>(56);
+    var newKey = List<Int32>.filled(32, Int32.ZERO);
+    var pc1m = List<bool>.filled(56, false);
+    var pcr = List<bool>.filled(56, false);
 
     for (var j = 0; j < 56; j++) {
       var l = pc1[j];
@@ -64,8 +64,8 @@ class DESEngine extends BaseBlockCipher {
               0);
     }
 
-    for (var i = Int32(0); i < 16; i++) {
-      Int32 l, m, n;
+    for (IntX i = Int32.ZERO; i < 16; i++) {
+      IntX l, m, n;
 
       if (encrypting) {
         m = i << 1;
@@ -73,11 +73,11 @@ class DESEngine extends BaseBlockCipher {
         m = (Int32(15) - i) << 1;
       }
 
-      n = m + 1;
-      newKey[m.toInt()] = Int32(0);
-      newKey[n.toInt()] = Int32(0);
+      n = m + 1 as Int32;
+      newKey[m.toInt()] = Int32.ZERO;
+      newKey[n.toInt()] = Int32.ZERO;
 
-      for (var j = Int32(0); j < 28; j++) {
+      for (IntX j = Int32.ZERO; j < 28; j++) {
         l = j + totrot[i.toInt()];
         if (l < 28) {
           pcr[j.toInt()] = pc1m[l.toInt()];
@@ -86,7 +86,7 @@ class DESEngine extends BaseBlockCipher {
         }
       }
 
-      for (var j = Int32(28); j < 56; j++) {
+      for (IntX j = Int32(28); j < 56; j++) {
         l = j + totrot[i.toInt()];
         if (l < 56) {
           pcr[j.toInt()] = pc1m[l.toInt()];
@@ -95,7 +95,7 @@ class DESEngine extends BaseBlockCipher {
         }
       }
 
-      for (var j = Int32(0); j < 24; j++) {
+      for (IntX j = Int32.ZERO; j < 24; j++) {
         if (pcr[pc2[j.toInt()].toInt()]) {
           newKey[m.toInt()] |= bigbyte[j.toInt()];
         }
