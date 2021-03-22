@@ -119,4 +119,6 @@ build/
 # Directory created by dartdoc
 doc/api/
 
-test/credentials.dart
+.idea/
+*.iml
+.DS_Store

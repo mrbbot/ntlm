@@ -1,6 +1,6 @@
 name: ntlm
 description: Library for making HTTP requests that require NTLM authentication
-version: 2.0.0
+version: 2.0.0-nullsafety.1
 homepage: https://github.com/mrbbot/ntlm
 
 environment:
@@ -12,5 +12,6 @@ dependencies:
   fixnum: ^1.0.0
 
 dev_dependencies:
-  test: ^1.16.8
+  http_parser: ^4.0.0
   pedantic: ^1.11.0
+  test: ^1.16.8

@@ -1,4 +1,4 @@
-## 2.0.0
+## 2.0.0-nullsafety.1
 
 - Migrate to null safety
 - **Breaking change:** `NTLMClient` now extends `BaseClient` making it much easier to compose. As a
