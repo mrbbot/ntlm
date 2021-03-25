@@ -1,6 +1,6 @@
 name: ntlm
 description: Library for making HTTP requests that require NTLM authentication
-version: 2.0.0-nullsafety.1
+version: 2.0.1
 homepage: https://github.com/mrbbot/ntlm
 
 environment:
@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   http: ^0.13.1
-  pointycastle: ^3.0.0-nullsafety.2
+  pointycastle: ^3.0.1
   fixnum: ^1.0.0
 
 dev_dependencies:

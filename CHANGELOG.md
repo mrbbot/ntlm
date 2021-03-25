@@ -1,3 +1,7 @@
+## 2.0.1
+
+- Switch to stable `pointycastle` version
+
 ## 2.0.0-nullsafety.1
 
 - Migrate to null safety
