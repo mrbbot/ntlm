@@ -185,7 +185,7 @@ Uint8List calculateNTLMResponseV2(
   return buf.buffer.asUint8List();
 }
 
-math.Random _random = math.Random();
+math.Random _random = math.Random.secure();
 
 Uint8List createRandomNonce([int length = 8]) =>
     Uint8List.fromList(List.generate(length, (i) => _random.nextInt(255)));
