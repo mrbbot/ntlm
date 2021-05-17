@@ -165,7 +165,9 @@ Uint8List calculateNTLMResponseV2(
   // (11644473600000 = milliseconds between 1970 and 1601)
   var timestamp =
       (DateTime.now().millisecondsSinceEpoch + 11644473600000) * 10000;
-  buf.setUint64(24, timestamp);
+  // buf.setUint64(24, timestamp);
+  buf.setUint32(24, timestamp >> 32);
+  buf.setUint32(24 + 4, timestamp & 0xFFFFFFFF);
 
   // Client Nonce
   write(buf, clientNonce, 32, clientNonce.length);
