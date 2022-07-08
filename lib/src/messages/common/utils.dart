@@ -68,7 +68,7 @@ Uint8List encodeUtf16le(String s) => Uint8List.fromList(
     );
 
 Uint8List createLMHashedPasswordV1(String password) {
-  var oemPassword = ascii.encode(password.toUpperCase());
+  var oemPassword = password.toUpperCase().codeUnits;
   var length = math.min(oemPassword.length, 14);
   var keyBytes = List<int>.filled(14, 0);
   _arrayCopy(oemPassword, 0, keyBytes, 0, length);
