@@ -1,10 +1,11 @@
 import 'dart:typed_data';
-import 'package:pointycastle/api.dart';
-import 'package:pointycastle/src/impl/base_block_cipher.dart';
-import 'package:pointycastle/src/ufixnum.dart';
-import 'package:pointycastle/src/registry/registry.dart';
+
 import 'package:fixnum/fixnum.dart';
 import 'package:ntlm/src/des/des_constants.dart';
+import 'package:pointycastle/api.dart';
+import 'package:pointycastle/src/impl/base_block_cipher.dart';
+import 'package:pointycastle/src/registry/registry.dart';
+import 'package:pointycastle/src/ufixnum.dart';
 
 class DESEngine extends BaseBlockCipher {
   static final FactoryConfig FACTORY_CONFIG =

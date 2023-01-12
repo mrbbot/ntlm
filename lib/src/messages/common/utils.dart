@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'package:pointycastle/api.dart';
-import 'package:pointycastle/digests/md4.dart';
-import 'package:pointycastle/digests/md5.dart';
-import 'package:pointycastle/block/modes/ecb.dart';
-import 'package:pointycastle/macs/hmac.dart';
+
 import 'package:ntlm/src/des/des.dart';
 import 'package:ntlm/src/messages/type2.dart';
+import 'package:pointycastle/api.dart';
+import 'package:pointycastle/block/modes/ecb.dart';
+import 'package:pointycastle/digests/md4.dart';
+import 'package:pointycastle/digests/md5.dart';
+import 'package:pointycastle/macs/hmac.dart';
 
 void write(ByteData buf, Uint8List data, int offset, int length) {
   for (var i = 0; i < length; i++) {
