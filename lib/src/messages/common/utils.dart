@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'package:pointycastle/api.dart';
-import 'package:pointycastle/digests/md4.dart';
-import 'package:pointycastle/digests/md5.dart';
-import 'package:pointycastle/block/modes/ecb.dart';
-import 'package:pointycastle/macs/hmac.dart';
+
 import 'package:ntlm/src/des/des.dart';
 import 'package:ntlm/src/messages/type2.dart';
+import 'package:pointycastle/api.dart';
+import 'package:pointycastle/block/modes/ecb.dart';
+import 'package:pointycastle/digests/md4.dart';
+import 'package:pointycastle/digests/md5.dart';
+import 'package:pointycastle/macs/hmac.dart';
 
 void write(ByteData buf, Uint8List data, int offset, int length) {
   for (var i = 0; i < length; i++) {
@@ -68,7 +69,7 @@ Uint8List encodeUtf16le(String s) => Uint8List.fromList(
     );
 
 Uint8List createLMHashedPasswordV1(String password) {
-  var oemPassword = ascii.encode(password.toUpperCase());
+  var oemPassword = password.toUpperCase().codeUnits;
   var length = math.min(oemPassword.length, 14);
   var keyBytes = List<int>.filled(14, 0);
   _arrayCopy(oemPassword, 0, keyBytes, 0, length);
@@ -165,7 +166,9 @@ Uint8List calculateNTLMResponseV2(
   // (11644473600000 = milliseconds between 1970 and 1601)
   var timestamp =
       (DateTime.now().millisecondsSinceEpoch + 11644473600000) * 10000;
-  buf.setUint64(24, timestamp);
+  // buf.setUint64(24, timestamp);
+   buf.setUint32(24, timestamp >> 32);
+   buf.setUint32(24 + 4, timestamp & 0xFFFFFFFF);
 
   // Client Nonce
   write(buf, clientNonce, 32, clientNonce.length);

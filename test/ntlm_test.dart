@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
-import 'package:test/test.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:ntlm/ntlm.dart';
+import 'package:test/test.dart';
 
 /// The environment variable `NTLM_TEST_URL` should be set to the URL of a
 /// server that accepts GET, HEAD, POST, PATCH, PUT and DELETE requests to /,

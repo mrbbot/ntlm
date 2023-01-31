@@ -13,16 +13,19 @@ class NTLMClient extends BaseClient {
   String workstation;
 
   /// The username of the user trying to authenticate
-  String username;
+  final String username;
 
   /// The password of the user trying to authenticate
-  String? password;
+  final String? _password;
+
+  /// The password is set
+  bool get isPassSet => (_password ?? '') != '';
 
   /// The lan manager hash of the user's password
-  String? lmPassword;
+  final String? _lmPassword;
 
   /// The NT hash of the user's password
-  String? ntPassword;
+  final String? _ntPassword;
 
   /// The prefix for 'www-authenticate'/'authorization' headers (usually
   /// either [kHeaderPrefixNTLM] or [kHeaderPrefixNegotiate])
@@ -33,7 +36,7 @@ class NTLMClient extends BaseClient {
 
   /// Creates a new NTLM client
   ///
-  /// The [username] is required as is either the [password]...
+  /// The [username] is required as is either the [_password]...
   ///
   /// ```dart
   /// NTLMClient client = new NTLMClient(
@@ -42,7 +45,7 @@ class NTLMClient extends BaseClient {
   /// );
   /// ```
   ///
-  /// ...or the [lmPassword] and the [ntPassword] in base 64 form.
+  /// ...or the [_lmPassword] and the [_ntPassword] in base 64 form.
   ///
   /// ```dart
   /// String lmPassword = lmHash("password");
@@ -60,14 +63,17 @@ class NTLMClient extends BaseClient {
   NTLMClient({
     this.domain = '',
     this.workstation = '',
-    required this.username,
-    this.password,
-    this.lmPassword,
-    this.ntPassword,
+    required String username,
+    String? password,
+    String? lmPassword,
+    String? ntPassword,
     Client? inner,
     this.headerPrefix = kHeaderPrefixNTLM,
-  }) {
-    if (password == null && (lmPassword == null || ntPassword == null)) {
+  })  : username = username,
+        _password = password,
+        _ntPassword = ntPassword,
+        _lmPassword = lmPassword {
+    if (_password == null && (_lmPassword == null || _ntPassword == null)) {
       throw ArgumentError(
         'You must provide a password or the LM and NT hash of a password.',
       );
@@ -137,9 +143,9 @@ class NTLMClient extends BaseClient {
       domain: domain,
       workstation: workstation,
       username: username,
-      password: password,
-      lmPassword: lmPassword,
-      ntPassword: ntPassword,
+      password: _password,
+      lmPassword: _lmPassword,
+      ntPassword: _ntPassword,
       headerPrefix: headerPrefix,
     );
 
