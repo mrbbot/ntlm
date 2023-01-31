@@ -13,7 +13,7 @@ class NTLMClient extends BaseClient {
   String workstation;
 
   /// The username of the user trying to authenticate
-  final String _username;
+  final String username;
 
   /// The password of the user trying to authenticate
   final String? _password;
@@ -36,7 +36,7 @@ class NTLMClient extends BaseClient {
 
   /// Creates a new NTLM client
   ///
-  /// The [_username] is required as is either the [_password]...
+  /// The [username] is required as is either the [_password]...
   ///
   /// ```dart
   /// NTLMClient client = new NTLMClient(
@@ -69,7 +69,7 @@ class NTLMClient extends BaseClient {
     String? ntPassword,
     Client? inner,
     this.headerPrefix = kHeaderPrefixNTLM,
-  })  : _username = username,
+  })  : username = username,
         _password = password,
         _ntPassword = ntPassword,
         _lmPassword = lmPassword {
@@ -142,7 +142,7 @@ class NTLMClient extends BaseClient {
       msg2,
       domain: domain,
       workstation: workstation,
-      username: _username,
+      username: username,
       password: _password,
       lmPassword: _lmPassword,
       ntPassword: _ntPassword,
