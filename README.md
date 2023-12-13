@@ -8,7 +8,7 @@ Add the dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  ntlm: ^2.0.1
+  ntlm: ^2.0.2
 ```
 
 ## Example
