@@ -14,18 +14,18 @@ String createType1Message({
   workstation = workstation.toUpperCase();
   const signature = 'NTLMSSP\x00';
 
-  const BODY_LENGTH = 40;
+  const bodyLength = 40;
 
-  var type1Flags = flags.NTLM_TYPE1_FLAGS;
+  var type1Flags = flags.ntlmType1Flags;
   if (domain == '') {
-    type1Flags -= flags.NTLM_NegotiateOemDomainSupplied;
+    type1Flags -= flags.ntlmNegotiateOemDomainSupplied;
   }
   if (workstation == '') {
-    type1Flags -= flags.NTLM_NegotiateOemWorkstationSupplied;
+    type1Flags -= flags.ntlmNegotiateOemWorkstationSupplied;
   }
 
   var pos = 0;
-  var buf = ByteData(BODY_LENGTH + domain.length + workstation.length);
+  var buf = ByteData(bodyLength + domain.length + workstation.length);
 
   // protocol
   write(buf, ascii.encode(signature), pos, signature.length);
@@ -44,7 +44,7 @@ String createType1Message({
   buf.setUint16(pos, domain.length, Endian.little);
   pos += 2;
   // domain buffer offset
-  var domainOffset = domain == '' ? 0 : BODY_LENGTH + workstation.length;
+  var domainOffset = domain == '' ? 0 : bodyLength + workstation.length;
   buf.setUint32(pos, domainOffset, Endian.little);
   pos += 4;
 
@@ -55,7 +55,7 @@ String createType1Message({
   buf.setUint16(pos, workstation.length, Endian.little);
   pos += 2;
   // workstation buffer offset
-  var workstationOffset = workstation == '' ? 0 : BODY_LENGTH;
+  var workstationOffset = workstation == '' ? 0 : bodyLength;
   buf.setUint32(pos, workstationOffset, Endian.little);
   pos += 4;
 

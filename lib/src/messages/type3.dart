@@ -25,50 +25,38 @@ String createType3Message(
   var serverNonce = msg2.serverChallenge;
   var negotiateFlags = msg2.negotiateFlags;
 
-  var isUnicode = negotiateFlags & flags.NTLM_NegotiateUnicode != 0;
-  var isNegotiateExtendedSecurity =
-      negotiateFlags & flags.NTLM_NegotiateExtendedSecurity != 0;
+  var isUnicode = negotiateFlags & flags.ntlmNegotiateUnicode != 0;
+  var isNegotiateExtendedSecurity = negotiateFlags & flags.ntlmNegotiateExtendedSecurity != 0;
 
-  const BODY_LENGTH = 72;
+  const bodyLength = 72;
 
   domain = domain.toUpperCase();
   workstation = workstation.toUpperCase();
   var encryptedRandomSessionKey = '';
 
-  var encode =
-      (String str) => isUnicode ? encodeUtf16le(str) : ascii.encode(str);
+  encode(String str) => isUnicode ? encodeUtf16le(str) : ascii.encode(str);
   var workstationBytes = encode(workstation);
   var domainBytes = encode(domain);
   var usernameBytes = encode(username);
   var encryptedRandomSessionKeyBytes = encode(encryptedRandomSessionKey);
 
-  var lmChallengeResponse = calculateResponse(
-      lmPassword != null
-          ? base64Decode(lmPassword)
-          : createLMHashedPasswordV1(password!),
-      serverNonce);
-  var ntChallengeResponse = calculateResponse(
-      ntPassword != null
-          ? base64Decode(ntPassword)
-          : createNTHashedPasswordV1(password!),
-      serverNonce);
+  var lmChallengeResponse =
+      calculateResponse(lmPassword != null ? base64Decode(lmPassword) : createLMHashedPasswordV1(password!), serverNonce);
+  var ntChallengeResponse =
+      calculateResponse(ntPassword != null ? base64Decode(ntPassword) : createNTHashedPasswordV1(password!), serverNonce);
   if (isNegotiateExtendedSecurity) {
-    var passwordHash = ntPassword != null
-        ? base64Decode(ntPassword)
-        : createNTHashedPasswordV1(password!);
+    var passwordHash = ntPassword != null ? base64Decode(ntPassword) : createNTHashedPasswordV1(password!);
     var clientNonce = createRandomNonce();
 
-    lmChallengeResponse = calculateLMResponseV2(
-        msg2.serverChallenge, username, passwordHash, clientNonce);
-    ntChallengeResponse =
-        calculateNTLMResponseV2(msg2, username, passwordHash, clientNonce);
+    lmChallengeResponse = calculateLMResponseV2(msg2.serverChallenge, username, passwordHash, clientNonce);
+    ntChallengeResponse = calculateNTLMResponseV2(msg2, username, passwordHash, clientNonce);
   }
 
   const signature = 'NTLMSSP\x00';
 
   var pos = 0;
   var buf = ByteData(
-    BODY_LENGTH +
+    bodyLength +
         domainBytes.length +
         usernameBytes.length +
         workstationBytes.length +
@@ -91,13 +79,7 @@ String createType3Message(
   buf.setUint16(pos, lmChallengeResponse.length, Endian.little);
   pos += 2;
   // LmChallengeResponseOffset
-  buf.setUint32(
-      pos,
-      BODY_LENGTH +
-          domainBytes.length +
-          usernameBytes.length +
-          workstationBytes.length,
-      Endian.little);
+  buf.setUint32(pos, bodyLength + domainBytes.length + usernameBytes.length + workstationBytes.length, Endian.little);
   pos += 4;
 
   // NtChallengeResponseLen
@@ -108,13 +90,7 @@ String createType3Message(
   pos += 2;
   // NtChallengeResponseOffset
   buf.setUint32(
-      pos,
-      BODY_LENGTH +
-          domainBytes.length +
-          usernameBytes.length +
-          workstationBytes.length +
-          lmChallengeResponse.length,
-      Endian.little);
+      pos, bodyLength + domainBytes.length + usernameBytes.length + workstationBytes.length + lmChallengeResponse.length, Endian.little);
   pos += 4;
 
   // DomainNameLen
@@ -124,7 +100,7 @@ String createType3Message(
   buf.setUint16(pos, domainBytes.length, Endian.little);
   pos += 2;
   // DomainNameOffset
-  buf.setUint32(pos, BODY_LENGTH, Endian.little);
+  buf.setUint32(pos, bodyLength, Endian.little);
   pos += 4;
 
   // UserNameLen
@@ -134,7 +110,7 @@ String createType3Message(
   buf.setUint16(pos, usernameBytes.length, Endian.little);
   pos += 2;
   // UserNameOffset
-  buf.setUint32(pos, BODY_LENGTH + domainBytes.length, Endian.little);
+  buf.setUint32(pos, bodyLength + domainBytes.length, Endian.little);
   pos += 4;
 
   // WorkstationLen
@@ -144,8 +120,7 @@ String createType3Message(
   buf.setUint16(pos, workstationBytes.length, Endian.little);
   pos += 2;
   // WorkstationOffset
-  buf.setUint32(pos, BODY_LENGTH + domainBytes.length + usernameBytes.length,
-      Endian.little);
+  buf.setUint32(pos, bodyLength + domainBytes.length + usernameBytes.length, Endian.little);
   pos += 4;
 
   // EncryptedRandomSessionKeyLen
@@ -157,7 +132,7 @@ String createType3Message(
   // EncryptedRandomSessionKeyOffset
   buf.setUint32(
       pos,
-      BODY_LENGTH +
+      bodyLength +
           domainBytes.length +
           usernameBytes.length +
           workstationBytes.length +
@@ -167,7 +142,7 @@ String createType3Message(
   pos += 4;
 
   // NegotiateFlags
-  buf.setUint32(pos, flags.NTLM_TYPE2_FLAGS, Endian.little);
+  buf.setUint32(pos, flags.ntlmType2Flags, Endian.little);
   pos += 4;
 
   // ProductMajorVersion
@@ -202,8 +177,7 @@ String createType3Message(
   pos += lmChallengeResponse.length;
   write(buf, ntChallengeResponse, pos, ntChallengeResponse.length);
   pos += ntChallengeResponse.length;
-  write(buf, encryptedRandomSessionKeyBytes, pos,
-      encryptedRandomSessionKeyBytes.length);
+  write(buf, encryptedRandomSessionKeyBytes, pos, encryptedRandomSessionKeyBytes.length);
   pos += encryptedRandomSessionKeyBytes.length;
 
   return '$headerPrefix ${base64Encode(buf.buffer.asUint8List())}';

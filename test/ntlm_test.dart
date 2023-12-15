@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
-import 'package:test/test.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:ntlm/ntlm.dart';
+import 'package:test/test.dart';
 
 /// The environment variable `NTLM_TEST_URL` should be set to the URL of a
 /// server that accepts GET, HEAD, POST, PATCH, PUT and DELETE requests to /,
@@ -106,8 +107,7 @@ void _expectResponse(
   expect(res.statusCode, 200);
   Map<String, dynamic> body = json.decode(res.body);
   expect(body['method'], method);
-  final authorizationHeader =
-      body['headers']['Authorization'] ?? body['headers']['authorization'];
+  final authorizationHeader = body['headers']['Authorization'] ?? body['headers']['authorization'];
   expect(authorizationHeader[0], startsWith('NTLM '));
   expect(body['user'], endsWith(username));
   for (final segment in bodySegments) {

@@ -1,16 +1,17 @@
 import 'dart:typed_data';
+
+import 'package:fixnum/fixnum.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/src/impl/base_block_cipher.dart';
-import 'package:pointycastle/src/ufixnum.dart';
 import 'package:pointycastle/src/registry/registry.dart';
-import 'package:fixnum/fixnum.dart';
+import 'package:pointycastle/src/ufixnum.dart';
+
 import 'package:ntlm/src/des/des_constants.dart';
 
 class DESEngine extends BaseBlockCipher {
-  static final FactoryConfig FACTORY_CONFIG =
-      StaticFactoryConfig(BlockCipher, 'DES', () => DESEngine());
+  static final FactoryConfig factoryConfig = StaticFactoryConfig(BlockCipher, 'DES', () => DESEngine());
 
-  static const _BLOCK_SIZE = 8;
+  static const _blockSize = 8;
 
   List<Int32>? _workingKey;
 
@@ -18,7 +19,7 @@ class DESEngine extends BaseBlockCipher {
   String get algorithmName => 'DES';
 
   @override
-  int get blockSize => _BLOCK_SIZE;
+  int get blockSize => _blockSize;
 
   @override
   void reset() {}
@@ -38,17 +39,17 @@ class DESEngine extends BaseBlockCipher {
       throw StateError('DES engine not initialised');
     }
 
-    if ((inpOff + _BLOCK_SIZE) > inp.length) {
+    if ((inpOff + _blockSize) > inp.length) {
       throw ArgumentError('input buffer too short');
     }
 
-    if ((outOff + _BLOCK_SIZE) > out.length) {
+    if ((outOff + _blockSize) > out.length) {
       throw ArgumentError('output buffer too short');
     }
 
     _desFunc(_workingKey!, inp, inpOff, out, outOff);
 
-    return _BLOCK_SIZE;
+    return _blockSize;
   }
 
   List<Int32> _generateWorkingKey(bool encrypting, Uint8List key) {
@@ -59,9 +60,7 @@ class DESEngine extends BaseBlockCipher {
     for (var j = 0; j < 56; j++) {
       var l = pc1[j];
 
-      pc1m[j] =
-          ((key[l.shiftRightUnsigned(3).toInt()] & bytebit[(l & 7).toInt()]) !=
-              0);
+      pc1m[j] = ((key[l.shiftRightUnsigned(3).toInt()] & bytebit[(l & 7).toInt()]) != 0);
     }
 
     for (IntX i = Int32.ZERO; i < 16; i++) {
@@ -120,17 +119,13 @@ class DESEngine extends BaseBlockCipher {
           ((i2 & 0x00fc0000).shiftRightUnsigned(10)) |
           ((i2 & 0x00000fc0).shiftRightUnsigned(6));
 
-      newKey[i + 1] = ((i1 & 0x0003f000) << 12) |
-          ((i1 & 0x0000003f) << 16) |
-          ((i2 & 0x0003f000).shiftRightUnsigned(4)) |
-          (i2 & 0x0000003f);
+      newKey[i + 1] = ((i1 & 0x0003f000) << 12) | ((i1 & 0x0000003f) << 16) | ((i2 & 0x0003f000).shiftRightUnsigned(4)) | (i2 & 0x0000003f);
     }
 
     return newKey;
   }
 
-  void _desFunc(
-      List<Int32> wKey, Uint8List inp, int inOff, Uint8List out, int outOff) {
+  void _desFunc(List<Int32> wKey, Uint8List inp, int inOff, Uint8List out, int outOff) {
     Int32 work, right, left;
 
     left = Int32(unpack32(inp, inOff, Endian.big));
@@ -160,27 +155,27 @@ class DESEngine extends BaseBlockCipher {
       work = (right << 28) | (right.shiftRightUnsigned(4));
       work ^= wKey[round * 4 + 0];
 
-      fval = SP7[(work & 0x3f).toInt()];
-      fval |= SP5[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
-      fval |= SP3[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
-      fval |= SP1[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
+      fval = sp7[(work & 0x3f).toInt()];
+      fval |= sp5[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
+      fval |= sp3[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
+      fval |= sp1[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
       work = right ^ wKey[(round * 4 + 1)];
-      fval |= SP8[(work & 0x3f).toInt()];
-      fval |= SP6[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
-      fval |= SP4[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
-      fval |= SP2[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
+      fval |= sp8[(work & 0x3f).toInt()];
+      fval |= sp6[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
+      fval |= sp4[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
+      fval |= sp2[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
       left ^= fval;
       work = (left << 28) | (left.shiftRightUnsigned(4));
       work ^= wKey[(round * 4 + 2)];
-      fval = SP7[(work & 0x3f).toInt()];
-      fval |= SP5[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
-      fval |= SP3[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
-      fval |= SP1[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
+      fval = sp7[(work & 0x3f).toInt()];
+      fval |= sp5[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
+      fval |= sp3[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
+      fval |= sp1[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
       work = left ^ wKey[(round * 4 + 3)];
-      fval |= SP8[(work & 0x3f).toInt()];
-      fval |= SP6[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
-      fval |= SP4[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
-      fval |= SP2[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
+      fval |= sp8[(work & 0x3f).toInt()];
+      fval |= sp6[((work.shiftRightUnsigned(8)) & 0x3f).toInt()];
+      fval |= sp4[((work.shiftRightUnsigned(16)) & 0x3f).toInt()];
+      fval |= sp2[((work.shiftRightUnsigned(24)) & 0x3f).toInt()];
       right ^= fval;
     }
 

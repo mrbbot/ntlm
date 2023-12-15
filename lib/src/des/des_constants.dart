@@ -88,9 +88,7 @@ final pc1 = [
   3
 ].map((i) => Int32(i)).toList();
 
-final totrot = [1, 2, 4, 6, 8, 10, 12, 14, 15, 17, 19, 21, 23, 25, 27, 28]
-    .map((i) => Int32(i))
-    .toList();
+final totrot = [1, 2, 4, 6, 8, 10, 12, 14, 15, 17, 19, 21, 23, 25, 27, 28].map((i) => Int32(i)).toList();
 
 final pc2 = [
   13,
@@ -143,7 +141,7 @@ final pc2 = [
   31
 ].map((i) => Int32(i)).toList();
 
-final SP1 = [
+final sp1 = [
   0x01010400,
   0x00000000,
   0x00010000,
@@ -210,7 +208,7 @@ final SP1 = [
   0x01010004
 ].map((i) => Int32(i)).toList();
 
-final SP2 = [
+final sp2 = [
   0x80108020,
   0x80008000,
   0x00008000,
@@ -277,7 +275,7 @@ final SP2 = [
   0x00108000
 ].map((i) => Int32(i)).toList();
 
-final SP3 = [
+final sp3 = [
   0x00000208,
   0x08020200,
   0x00000000,
@@ -344,7 +342,7 @@ final SP3 = [
   0x00020200
 ].map((i) => Int32(i)).toList();
 
-final SP4 = [
+final sp4 = [
   0x00802001,
   0x00002081,
   0x00002081,
@@ -411,7 +409,7 @@ final SP4 = [
   0x00802080
 ].map((i) => Int32(i)).toList();
 
-final SP5 = [
+final sp5 = [
   0x00000100,
   0x02080100,
   0x02080000,
@@ -478,7 +476,7 @@ final SP5 = [
   0x40000100
 ].map((i) => Int32(i)).toList();
 
-final SP6 = [
+final sp6 = [
   0x20000010,
   0x20400000,
   0x00004000,
@@ -545,7 +543,7 @@ final SP6 = [
   0x20004010
 ].map((i) => Int32(i)).toList();
 
-final SP7 = [
+final sp7 = [
   0x00200000,
   0x04200002,
   0x04000802,
@@ -612,7 +610,7 @@ final SP7 = [
   0x00200002
 ].map((i) => Int32(i)).toList();
 
-final SP8 = [
+final sp8 = [
   0x10001040,
   0x00001000,
   0x00040000,

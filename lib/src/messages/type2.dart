@@ -92,7 +92,7 @@ Type2Message parseType2Message(
   int? targetInfoMaxLength;
   int? targetInfoOffset;
   Uint8List? targetInfo;
-  if (negotiateFlags & flags.NTLM_NegotiateTargetInfo != 0) {
+  if (negotiateFlags & flags.ntlmNegotiateTargetInfo != 0) {
     targetInfoLength = bufView.getInt16(40, Endian.little);
     targetInfoMaxLength = bufView.getInt16(42, Endian.little);
     targetInfoOffset = bufView.getInt32(44, Endian.little);
