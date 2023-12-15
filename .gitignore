@@ -122,3 +122,5 @@ doc/api/
 .idea/
 *.iml
 .DS_Store
+
+personalized_test.dart
